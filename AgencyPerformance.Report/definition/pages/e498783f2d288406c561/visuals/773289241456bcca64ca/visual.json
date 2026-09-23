@@ -116,6 +116,13 @@
                   "Value": "'Arial'"
                 }
               }
+            },
+            "textSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12.6D"
+                }
+              }
             }
           }
         }
