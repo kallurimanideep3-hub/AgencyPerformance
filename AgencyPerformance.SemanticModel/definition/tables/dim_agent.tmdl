@@ -1,0 +1,97 @@
+table dim_agent
+	lineageTag: 73a81ecd-2d94-4f20-9963-9554a9192112
+
+	column agent_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 0fa242e4-cb76-4f90-a790-9bc95e13f31b
+		summarizeBy: none
+		sourceColumn: agent_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column agent_code
+		dataType: string
+		lineageTag: 4d032cf5-a883-44f0-9444-3be0ef981a32
+		summarizeBy: none
+		sourceColumn: agent_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column agent_name
+		dataType: string
+		lineageTag: fb45f40b-8ce7-4631-9dcd-c7991f5ade13
+		summarizeBy: none
+		sourceColumn: agent_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column region
+		dataType: string
+		lineageTag: 8a963891-172e-4bf3-ad73-04966910b628
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	column territory
+		dataType: string
+		lineageTag: c4cf250b-2e14-4f7b-afd3-8026eaf75ff6
+		summarizeBy: none
+		sourceColumn: territory
+
+		annotation SummarizationSetBy = Automatic
+
+	column office
+		dataType: string
+		lineageTag: 525f8fe3-3773-4f5f-ac84-0198044b6350
+		summarizeBy: none
+		sourceColumn: office
+
+		annotation SummarizationSetBy = Automatic
+
+	column join_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: f7efa231-f2af-46ed-8a96-89634cf78fe4
+		summarizeBy: none
+		sourceColumn: join_date
+
+		variation Variation
+			isDefault
+			relationship: 8517e599-bc8d-4de1-81a6-6855dfd244b8
+			defaultHierarchy: LocalDateTable_7864ed76-28c4-48ab-a039-be6fb86aa7c9.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column channel
+		dataType: string
+		lineageTag: 5f70be27-3430-4c59-8f8c-5403899bbf50
+		summarizeBy: none
+		sourceColumn: channel
+
+		annotation SummarizationSetBy = Automatic
+
+	column active_flag
+		dataType: int64
+		formatString: 0
+		lineageTag: e05c96f1-d832-4bae-82ee-d7e4ccee6530
+		summarizeBy: sum
+		sourceColumn: active_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_agent = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Mac\Home\Documents\AgencyPerformance\dim_agent.csv"), [Delimiter = ",", Columns = 9, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"agent_id", Int64.Type}, {"agent_code", type text}, {"agent_name", type text}, {"region", type text}, {"territory", type text}, {"office", type text}, {"join_date", type date}, {"channel", type text}, {"active_flag", Int64.Type}})
+				in
+				  #"Changed column type"
+
+	changedProperty = Name
+

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "AgencyPerformance"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "1afeaf02-7e3d-4986-ba51-fc945eb42d99"
+  }
+}

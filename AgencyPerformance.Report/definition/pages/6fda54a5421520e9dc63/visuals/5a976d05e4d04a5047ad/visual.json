@@ -1,0 +1,38 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "5a976d05e4d04a5047ad",
+  "position": {
+    "x": 9.9071207430340564,
+    "y": 0,
+    "z": 0,
+    "height": 748.97832817337473,
+    "width": 1646.5634674922603,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "htmlContent443BE3AD55E043BF878BED274D3A6855",
+    "query": {
+      "queryState": {
+        "content": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_sales"
+                    }
+                  },
+                  "Property": "Agent Profile HTML"
+                }
+              },
+              "queryRef": "fact_sales.Agent Profile HTML",
+              "nativeQueryRef": "Agent Profile HTML"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

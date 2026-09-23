@@ -1,0 +1,102 @@
+table fact_persistency
+	lineageTag: 298a7680-1ed4-4ead-ae76-427fea83da9c
+
+	column policy_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 6705d4d1-3318-40ec-b3dc-adb65eddab1b
+		summarizeBy: sum
+		sourceColumn: policy_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column agent_id
+		dataType: int64
+		formatString: 0
+		lineageTag: b614766f-3712-4d0e-a407-e24a661ad68c
+		summarizeBy: none
+		sourceColumn: agent_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: c64f6146-d5d5-47d1-a7b8-dda76f191383
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column issue_date_key
+		dataType: int64
+		formatString: 0
+		lineageTag: 9a064cfd-a8e6-497d-ac58-362d107c2692
+		summarizeBy: none
+		sourceColumn: issue_date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column renewal_due_date_key
+		dataType: int64
+		formatString: 0
+		lineageTag: e0a6eaae-aeb1-4fb7-8531-61dcc22f1218
+		summarizeBy: sum
+		sourceColumn: renewal_due_date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column renewal_status
+		dataType: string
+		lineageTag: c7be3dc5-36cf-4b31-87ae-4f42be349892
+		summarizeBy: none
+		sourceColumn: renewal_status
+
+		annotation SummarizationSetBy = Automatic
+
+	column premium_usd
+		dataType: double
+		lineageTag: 9a92230c-e98a-4825-b976-7fb41fee5d35
+		summarizeBy: sum
+		sourceColumn: premium_usd
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Issue Year' =
+			
+			LOOKUPVALUE(
+			    dim_date[year],
+			    dim_date[date_key],
+			    fact_persistency[issue_date_key]
+			)
+		formatString: 0
+		lineageTag: 219924e9-1e2a-4825-902f-e438eb95e893
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Renewal Year' =
+			
+			LOOKUPVALUE(
+			    dim_date[year],
+			    dim_date[date_key],
+			    fact_persistency[renewal_due_date_key]
+			)
+		formatString: 0
+		lineageTag: 6e38d235-8baa-495e-ba00-27f8cfb0b173
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_persistency = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Mac\Home\Documents\AgencyPerformance\fact_persistency.csv"), [Delimiter = ",", Columns = 7, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"policy_id", Int64.Type}, {"agent_id", Int64.Type}, {"product_id", Int64.Type}, {"issue_date_key", Int64.Type}, {"renewal_due_date_key", Int64.Type}, {"renewal_status", type text}, {"premium_usd", type number}})
+				in
+				  #"Changed column type"
+

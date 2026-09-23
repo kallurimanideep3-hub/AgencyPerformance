@@ -1,0 +1,334 @@
+table fact_sales
+	lineageTag: 9b0c14ee-9ae4-46a2-a703-c4e6b74c3105
+
+	measure 'Total APE' = SUM(fact_sales[ape_usd])
+		lineageTag: 452470d1-224c-4132-bb1a-5f0b51d958fa
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'APE YTD' =
+			
+			TOTALYTD(
+			    [Total APE],
+			    dim_date[date]
+			)
+		lineageTag: c3267427-dfca-4009-b349-9604f6640954
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Target' =
+			
+			CALCULATE(
+			    SUM(fact_target[ape_target_usd]),
+			    TREATAS(
+			        VALUES(dim_date[DateMonth]),
+			        fact_target[TargetMonth]
+			    )
+			)
+		lineageTag: 5e717d13-4fe8-4f69-9e7f-d7e3abbf2d26
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'APE vs Target %' =
+			
+			DIVIDE(
+			    [APE YTD] - [Target YTD],
+			    [Target YTD]
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 3051922b-3026-4317-bb3f-d9f18c2f9b87
+
+	measure 'APE MoM Growth %' =
+			
+			VAR PreviousMonthAPE =
+			    CALCULATE(
+			        [Total APE],
+			        DATEADD(dim_date[date], -1, MONTH)
+			    )
+			RETURN
+			    DIVIDE(
+			        [Total APE] - PreviousMonthAPE,
+			        PreviousMonthAPE
+			    )
+		lineageTag: 5e290cdb-6051-4fdb-bafc-8f59be37724d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Active Agent Count' =
+			
+			CALCULATE(
+			    DISTINCTCOUNT(dim_agent[agent_id]),
+			    dim_agent[active_flag] = 1
+			)
+		formatString: 0
+		lineageTag: 5446d4ea-eeaa-4162-b7fc-210a9114b97e
+
+	measure 'Agent Rank by APE' =
+			
+			RANKX(
+			    ALLSELECTED(dim_agent[agent_name]),
+			    [Total APE],
+			    ,
+			    DESC,
+			    SKIP
+			)
+		formatString: 0
+		lineageTag: b7f20174-76dd-4af5-adbb-e056305765dc
+
+	measure 'Persistency Rate' =
+			
+			VAR RenewedPolicies =
+			    CALCULATE(
+			        COUNTROWS(fact_persistency),
+			        fact_persistency[renewal_status] = "renewed",
+			        USERELATIONSHIP(
+			            fact_persistency[renewal_due_date_key],
+			            dim_date[date_key]
+			        )
+			    )
+			VAR DuePolicies =
+			    CALCULATE(
+			        COUNTROWS(fact_persistency),
+			        fact_persistency[renewal_status] IN {
+			            "renewed",
+			            "lapsed",
+			            "grace"
+			        },
+			        USERELATIONSHIP(
+			            fact_persistency[renewal_due_date_key],
+			            dim_date[date_key]
+			        )
+			    )
+			RETURN
+			    DIVIDE(RenewedPolicies, DuePolicies)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: d5dcb736-a752-45f2-90f9-d644cb131b21
+
+	measure 'Active Policy Count Snapshot' =
+			
+			VAR SnapshotDate =
+			    MAX(dim_date[date_key])
+			RETURN
+			    CALCULATE(
+			        DISTINCTCOUNT(fact_persistency[policy_id]),
+			        REMOVEFILTERS(dim_date),
+			        FILTER(
+			            fact_persistency,
+			            fact_persistency[issue_date_key] <= SnapshotDate
+			                &&
+			            fact_persistency[renewal_status] IN {
+			                "active",
+			                "grace",
+			                "renewed"
+			            }
+			                &&
+			            (
+			                fact_persistency[renewal_status] <> "grace"
+			                || fact_persistency[renewal_due_date_key] >= SnapshotDate
+			            )
+			        )
+			    )
+		formatString: 0
+		lineageTag: fa0896eb-0ad5-4b41-b093-487b28b7afda
+
+	measure 'Target YTD' =
+			
+			CALCULATE(
+			    [Total Target],
+			    DATESYTD(dim_date[date])
+			)
+		lineageTag: 4332df89-15c4-483e-951d-71fe9b413d3f
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Agent Profile HTML' =
+			
+			VAR AgentName =
+			    SELECTEDVALUE(dim_agent[agent_name], "Select an Agent")
+			
+			VAR Territory =
+			    SELECTEDVALUE(dim_agent[territory], "—")
+			
+			VAR YTDApe =
+			    [APE YTD]
+			
+			VAR AgentRank =
+			    [Agent Rank by APE]
+			
+			VAR MoMGrowth =
+			    [APE MoM Growth %]
+			
+			VAR Persistency =
+			    [Persistency Rate]
+			
+			VAR TopProduct =
+			    TOPN(
+			        1,
+			        ALLSELECTED(dim_product[product_name]),
+			        [Total APE],
+			        DESC
+			    )
+			
+			VAR TopProductName =
+			    CONCATENATEX(
+			        TopProduct,
+			        dim_product[product_name],
+			        ", "
+			    )
+			
+			VAR TrendText =
+			    IF(
+			        ISBLANK(MoMGrowth),
+			        "—",
+			        IF(MoMGrowth >= 0, "▲ ", "▼ ")
+			            & FORMAT(MoMGrowth, "0.0%")
+			    )
+			
+			VAR TrendColor =
+			    IF(MoMGrowth >= 0, "#15803D", "#DC2626")
+			
+			RETURN
+			"
+			<div style='font-family:Segoe UI; padding:35px; background:#FFFFFF; width:100%; box-sizing:border-box;'>
+			
+			<div style='font-size:36px; font-weight:700; color:#111827; margin-bottom:8px;'>
+			" & AgentName & "
+			</div>
+			
+			<div style='font-size:20px; color:#6B7280; margin-bottom:25px;'>
+			Territory: " & Territory & "
+			</div>
+			
+			<div style='height:2px;background:#E5E7EB;margin-bottom:25px;'></div>
+			
+			<div style='display:flex;gap:20px;'>
+			
+			<div style='flex:1;padding:22px;background:#F3F6FA;border-radius:12px;'>
+			<div style='font-size:16px;color:#6B7280;'>YTD APE</div>
+			<div style='font-size:30px;font-weight:700;color:#111827;margin-top:8px;'>
+			" & FORMAT(YTDApe, "#,##0") & "
+			</div>
+			</div>
+			
+			<div style='flex:1;padding:22px;background:#F3F6FA;border-radius:12px;'>
+			<div style='font-size:16px;color:#6B7280;'>APE RANK</div>
+			<div style='font-size:30px;font-weight:700;color:#111827;margin-top:8px;'>
+			#" & FORMAT(AgentRank, "0") & "
+			</div>
+			</div>
+			
+			<div style='flex:1;padding:22px;background:#F3F6FA;border-radius:12px;'>
+			<div style='font-size:16px;color:#6B7280;'>MOM TREND</div>
+			<div style='font-size:30px;font-weight:700;color:" & TrendColor & ";margin-top:8px;'>
+			" & TrendText & "
+			</div>
+			</div>
+			
+			<div style='flex:1;padding:22px;background:#F3F6FA;border-radius:12px;'>
+			<div style='font-size:16px;color:#6B7280;'>PERSISTENCY</div>
+			<div style='font-size:30px;font-weight:700;color:#111827;margin-top:8px;'>
+			" & FORMAT(Persistency, "0.0%") & "
+			</div>
+			</div>
+			
+			</div>
+			
+			<div style='margin-top:25px;padding:22px;background:#EEF5FF;border-radius:12px;'>
+			
+			<div style='font-size:16px;color:#6B7280;'>
+			TOP PRODUCT BY APE
+			</div>
+			
+			<div style='font-size:25px;font-weight:700;color:#1D4ED8;margin-top:8px;'>
+			" & TopProductName & "
+			</div>
+			
+			</div>
+			
+			</div>
+			"
+		lineageTag: 30e698e5-473e-4c1d-b1ec-dadffa16cb2d
+
+	column sale_id
+		dataType: int64
+		formatString: 0
+		lineageTag: d340ec2d-3410-4ebc-aeed-75935d29fdd4
+		summarizeBy: sum
+		sourceColumn: sale_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_key
+		dataType: int64
+		formatString: 0
+		lineageTag: 43c523bc-fe35-4a67-a9b8-3d8becbfb6c2
+		summarizeBy: none
+		sourceColumn: date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column agent_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 5a7d64c5-be91-42e0-a937-77561e171118
+		summarizeBy: none
+		sourceColumn: agent_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 26406b22-db39-4064-8cdf-002194a846d3
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column ape_usd
+		dataType: double
+		lineageTag: 5301aa8a-59bd-4ac1-8637-9f42591cdada
+		summarizeBy: sum
+		sourceColumn: ape_usd
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column fyp_usd
+		dataType: double
+		lineageTag: 55db52a8-67c1-4f59-8c07-cbc1a60e662f
+		summarizeBy: sum
+		sourceColumn: fyp_usd
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column policies_issued
+		dataType: int64
+		formatString: 0
+		lineageTag: 413a289f-f7e8-4d49-891f-d5e1a88bc8b4
+		summarizeBy: sum
+		sourceColumn: policies_issued
+
+		annotation SummarizationSetBy = Automatic
+
+	column sale_channel
+		dataType: string
+		lineageTag: 40dc059d-9273-404f-a397-92dbe1c76c69
+		summarizeBy: none
+		sourceColumn: sale_channel
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_sales = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Mac\Home\Documents\AgencyPerformance\fact_sales.csv"), [Delimiter = ",", Columns = 8, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"sale_id", Int64.Type}, {"date_key", Int64.Type}, {"agent_id", Int64.Type}, {"product_id", Int64.Type}, {"ape_usd", type number}, {"fyp_usd", type number}, {"policies_issued", Int64.Type}, {"sale_channel", type text}})
+				in
+				  #"Changed column type"
+

@@ -1,0 +1,99 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 0,
+            "y": 0
+          },
+          "nodeIndex": "dim_date",
+          "nodeLineageTag": "87892108-2a30-45da-a076-3cec3293527e",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 1
+        },
+        {
+          "location": {
+            "x": 556.68681331221308,
+            "y": 89.481684521885583
+          },
+          "nodeIndex": "dim_product",
+          "nodeLineageTag": "9a0bbe6f-6873-4058-94ff-74ce19919e89",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 819.47719038779564,
+            "y": 437.16145729107711
+          },
+          "nodeIndex": "fact_persistency",
+          "nodeLineageTag": "298a7680-1ed4-4ead-ae76-427fea83da9c",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 16.592892877761926,
+            "y": 552.83207802690413
+          },
+          "nodeIndex": "fact_sales",
+          "nodeLineageTag": "9b0c14ee-9ae4-46a2-a703-c4e6b74c3105",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 798.94736842105249,
+            "y": 815.26315789473676
+          },
+          "nodeIndex": "fact_target",
+          "nodeLineageTag": "46cf035f-fff7-4960-bcfc-2ab365bb099b",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 284,
+            "y": 0
+          },
+          "nodeIndex": "dim_agent",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 60,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

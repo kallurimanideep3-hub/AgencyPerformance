@@ -1,0 +1,54 @@
+table dim_product
+	lineageTag: 9a0bbe6f-6873-4058-94ff-74ce19919e89
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 7528303e-f9f7-481b-a611-fdb42b743232
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_code
+		dataType: string
+		lineageTag: 3d9080fb-aae3-4972-962c-39f055a1c733
+		summarizeBy: none
+		sourceColumn: product_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_name
+		dataType: string
+		lineageTag: dfa966eb-39f8-4c68-9c87-4c9bef96169b
+		summarizeBy: none
+		sourceColumn: product_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_category
+		dataType: string
+		lineageTag: a92df062-ac29-478c-bef1-75f00d832d0a
+		summarizeBy: none
+		sourceColumn: product_category
+
+		annotation SummarizationSetBy = Automatic
+
+	column premium_type
+		dataType: string
+		lineageTag: 87be906d-1cd5-4d7e-9049-5e427d4ff20d
+		summarizeBy: none
+		sourceColumn: premium_type
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_product = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Mac\Home\Documents\AgencyPerformance\dim_product.csv"), [Delimiter = ",", Columns = 5, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"product_id", Int64.Type}, {"product_code", type text}, {"product_name", type text}, {"product_category", type text}, {"premium_type", type text}})
+				in
+				  #"Changed column type"
+
